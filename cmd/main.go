@@ -9,7 +9,7 @@ import (
 
 	"github.com/westcottian/vwap-calculation-engine/internal/listeners"
 	"github.com/westcottian/vwap-calculation-engine/internal/publishers"
-
+	"github.com/westcottian/vwap-calculation-engine/pkg/config"
 	"github.com/westcottian/vwap-calculation-engine/pkg/websocket"
 )
 
@@ -17,24 +17,25 @@ func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	// Dependencies & Configs
-	products := []string{"BTC-USD", "ETH-USD", "ETH-BTC"}
-	channels := []string{"matches"}
+	// Configs & Dependencies
+	u := url.URL{Scheme: "wss", Host: config.GetCoinbaseServiceAddress()}
+	windowSize := config.GetSlidingWindowSize()
+	products := config.GetProducts()
+	channels := config.GetChannels()
 	socket := websocket.NewCoinbaseWebSocket()
-	matchListener := listeners.NewMatchListener(&socket, publishers.NewLogPublisher(), 200, products)
-	u := url.URL{Scheme: "wss", Host: "ws-feed.exchange.coinbase.com"}
+	matchListener := listeners.NewMatchListener(&socket, publishers.NewLogPublisher(), windowSize, products)
 
 	// Connect
 	cleanup, err := socket.Connect(u.String())
 	if err != nil {
-		log.Panicf("could not connect to socket: %s", err.Error())
+		log.Fatalf("could not connect to socket: %s", err.Error())
 	}
 	defer cleanup()
 
 	// Subscribe
 	err = socket.Subscribe(channels, products)
 	if err != nil {
-		log.Panicf("could not subscribe to channels: %s", err.Error())
+		log.Fatalf("could not subscribe to channels: %s", err.Error())
 	}
 
 	// Listen for `match` events
