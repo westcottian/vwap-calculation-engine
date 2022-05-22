@@ -24,9 +24,9 @@ func TestMatchListener(t *testing.T) {
 		pubMock := new(mocks.VWAPPublisher)
 		socketMock := new(mocks.VWAPWebSocket)
 		products := []string{"BTC-USD", "ETH-USD", "ETH-BTC"}
-		matchJson := []byte(`{"type": "match", "price": "1000.00", "size": "1.00", "product_id": "BTC-USD"}`)
+		matchJSON := []byte(`{"type": "match", "price": "1000.00", "size": "1.00", "product_id": "BTC-USD"}`)
 		var expectedMatch domain.Match
-		err := json.Unmarshal(matchJson, &expectedMatch)
+		err := json.Unmarshal(matchJSON, &expectedMatch)
 		if err != nil {
 			t.Fatalf("could not parse expected match: %v", err)
 		}
@@ -41,7 +41,7 @@ func TestMatchListener(t *testing.T) {
 		expectedAggregate.Add(expectedMatch)
 
 		underTest := NewMatchListener(socketMock, pubMock, windowSize, products, false)
-		socketMock.On(ReadFunc).Return(0, matchJson, nil)
+		socketMock.On(ReadFunc).Return(0, matchJSON, nil)
 		pubMock.On(PublishFunc, &expectedAggregate).Return()
 
 		err = underTest.Listen()
@@ -74,11 +74,11 @@ func TestMatchListener(t *testing.T) {
 		pubMock := new(mocks.VWAPPublisher)
 		socketMock := new(mocks.VWAPWebSocket)
 		products := []string{"BTC-USD", "ETH-USD", "ETH-BTC"}
-		invalidJson := []byte(`{"type'''''': /match", "price": "1000.00", "size": "1.00", "product_id": "BTC-USD"}`)
+		invalidJSON := []byte(`{"type'''''': /match", "price": "1000.00", "size": "1.00", "product_id": "BTC-USD"}`)
 		var expectedError internalerrors.ErrParseMatch
 
 		underTest := NewMatchListener(socketMock, pubMock, windowSize, products, false)
-		socketMock.On(ReadFunc).Return(0, invalidJson, nil)
+		socketMock.On(ReadFunc).Return(0, invalidJSON, nil)
 
 		err := underTest.Listen()
 
@@ -93,10 +93,10 @@ func TestMatchListener(t *testing.T) {
 		pubMock := new(mocks.VWAPPublisher)
 		socketMock := new(mocks.VWAPWebSocket)
 		products := []string{"BTC-USD", "ETH-USD", "ETH-BTC"}
-		matchJson := []byte(`{"type": "any_other_type", "price": "1000.00", "size": "1.00", "product_id": "BTC-USD"}`)
+		matchJSON := []byte(`{"type": "any_other_type", "price": "1000.00", "size": "1.00", "product_id": "BTC-USD"}`)
 
 		underTest := NewMatchListener(socketMock, pubMock, windowSize, products, false)
-		socketMock.On(ReadFunc).Return(0, matchJson, nil)
+		socketMock.On(ReadFunc).Return(0, matchJSON, nil)
 
 		err := underTest.Listen()
 
@@ -110,10 +110,10 @@ func TestMatchListener(t *testing.T) {
 		pubMock := new(mocks.VWAPPublisher)
 		socketMock := new(mocks.VWAPWebSocket)
 		products := []string{"BTC-USD", "ETH-USD", "ETH-BTC"}
-		matchJson := []byte(`{"type": "match", "price": "1000.00", "size": "1.00", "product_id": "UNKNOWN"}`)
+		matchJSON := []byte(`{"type": "match", "price": "1000.00", "size": "1.00", "product_id": "UNKNOWN"}`)
 
 		underTest := NewMatchListener(socketMock, pubMock, windowSize, products, false)
-		socketMock.On(ReadFunc).Return(0, matchJson, nil)
+		socketMock.On(ReadFunc).Return(0, matchJSON, nil)
 
 		err := underTest.Listen()
 
@@ -127,10 +127,10 @@ func TestMatchListener(t *testing.T) {
 		pubMock := new(mocks.VWAPPublisher)
 		socketMock := new(mocks.VWAPWebSocket)
 		products := []string{"BTC-USD", "ETH-USD", "ETH-BTC"}
-		matchJson := []byte(`{"type": "match", "price": "foo", "size": "bah", "product_id": "BTC-USD"}`)
+		matchJSON := []byte(`{"type": "match", "price": "foo", "size": "bah", "product_id": "BTC-USD"}`)
 
 		underTest := NewMatchListener(socketMock, pubMock, windowSize, products, false)
-		socketMock.On(ReadFunc).Return(0, matchJson, nil)
+		socketMock.On(ReadFunc).Return(0, matchJSON, nil)
 
 		err := underTest.Listen()
 

@@ -37,7 +37,7 @@ func main() {
 	// Subscribe
 	err = socket.Subscribe(channels, products)
 	if err != nil {
-		log.Fatalf("could not subscribe to channels: %s", err.Error())
+		log.Printf("could not subscribe to channels: %s", err.Error())
 	}
 
 	// Listen for `match` events
