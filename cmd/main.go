@@ -9,6 +9,7 @@ import (
 
 	"github.com/westcottian/vwap-calculation-engine/internal/listeners"
 	"github.com/westcottian/vwap-calculation-engine/internal/publishers"
+	"github.com/westcottian/vwap-calculation-engine/pkg/broker"
 	"github.com/westcottian/vwap-calculation-engine/pkg/config"
 	"github.com/westcottian/vwap-calculation-engine/pkg/websocket"
 )
@@ -23,7 +24,8 @@ func main() {
 	products := config.GetProducts()
 	channels := config.GetChannels()
 	socket := websocket.NewCoinbaseWebSocket()
-	matchListener := listeners.NewMatchListener(&socket, publishers.NewLogPublisher(), windowSize, products)
+	messageClient := broker.NewStdoutBrokerClient()
+	matchListener := listeners.NewMatchListener(&socket, publishers.NewLocalPublisher(messageClient), windowSize, products)
 
 	// Connect
 	cleanup, err := socket.Connect(u.String())
@@ -54,7 +56,7 @@ func main() {
 			log.Println("gracefully shutting down")
 			err := socket.Close()
 			if err != nil {
-				log.Println("close:", err)
+				log.Println("close error:", err)
 				return
 			}
 			select {
