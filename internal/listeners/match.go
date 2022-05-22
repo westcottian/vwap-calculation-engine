@@ -2,6 +2,7 @@ package listeners
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 
 	"github.com/westcottian/vwap-calculation-engine/internal/aggregates"
