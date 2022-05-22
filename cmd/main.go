@@ -25,7 +25,7 @@ func main() {
 	channels := config.GetChannels()
 	socket := websocket.NewCoinbaseWebSocket()
 	messageClient := broker.NewStdoutBrokerClient()
-	matchListener := listeners.NewMatchListener(&socket, publishers.NewLocalPublisher(messageClient), windowSize, products)
+	matchListener := listeners.NewMatchListener(&socket, publishers.NewLocalPublisher(messageClient), windowSize, products, true)
 
 	// Connect
 	cleanup, err := socket.Connect(u.String())
@@ -44,7 +44,10 @@ func main() {
 	done := make(chan bool)
 	go func() {
 		defer close(done)
-		matchListener.Listen()
+		err := matchListener.Listen()
+		if err != nil {
+			log.Println("listening:", err)
+		}
 	}()
 
 	// Control Panel

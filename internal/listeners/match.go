@@ -6,6 +6,7 @@ import (
 
 	"github.com/westcottian/vwap-calculation-engine/internal/aggregates"
 	"github.com/westcottian/vwap-calculation-engine/internal/domain"
+	internalerrors "github.com/westcottian/vwap-calculation-engine/internal/errors"
 	"github.com/westcottian/vwap-calculation-engine/internal/publishers"
 	"github.com/westcottian/vwap-calculation-engine/pkg/websocket"
 )
@@ -18,36 +19,50 @@ type MatchListener struct {
 	publisher  publishers.VWAPPublisher
 	socket     websocket.VWAPWebSocket
 	aggregates map[string]aggregates.VWAPAggregate
+	forever    bool
 }
 
-func NewMatchListener(socket websocket.VWAPWebSocket, pub publishers.VWAPPublisher, slidingWindowSize int, productIDs []string) MatchListener {
+func NewMatchListener(socket websocket.VWAPWebSocket, pub publishers.VWAPPublisher, slidingWindowSize int, productIDs []string, forever bool) MatchListener {
 	index := make(map[string]aggregates.VWAPAggregate, len(productIDs))
 	for _, id := range productIDs {
 		index[id] = &aggregates.MatchAggregate{ProductID: id, SlidingWindowSize: slidingWindowSize}
 	}
 
-	return MatchListener{socket: socket, publisher: pub, aggregates: index}
+	return MatchListener{socket: socket, publisher: pub, aggregates: index, forever: forever}
 }
 
-func (l MatchListener) Listen() {
-	for {
-		var match domain.Match
-		_, rawMessage, err := l.socket.Read()
-		if err != nil {
-			log.Println("error reading message: ", err)
-			return
-		}
-
-		err = json.Unmarshal(rawMessage, &match)
-		if err != nil {
-			log.Println("error parsing message: ", err)
-			continue
-		}
-
-		if match.Type == MatchType {
-			l.handle(match)
+func (l MatchListener) Listen() error {
+	var errParseMatch internalerrors.ErrParseMatch
+	for l.forever {
+		if err := l.receiveIncomingMatches(); err != nil {
+			if errors.Is(err, errParseMatch) {
+				continue
+			}
+			return err
 		}
 	}
+
+	return l.receiveIncomingMatches()
+}
+
+func (l MatchListener) receiveIncomingMatches() error {
+	var match domain.Match
+	_, rawMessage, err := l.socket.Read()
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(rawMessage, &match)
+	if err != nil {
+		log.Println("parse error:", err)
+		return internalerrors.ErrParseMatch{}
+	}
+
+	if match.Type == MatchType {
+		l.handle(match)
+	}
+
+	return nil
 }
 
 func (l MatchListener) handle(match domain.Match) {
