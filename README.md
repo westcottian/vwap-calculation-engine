@@ -82,5 +82,14 @@ Organize and format code:
 make fmt
 ```
 
+# CI
+
+There are 2 GitHub Actions:
+ - **Verify**: runs on every `push/pull request` and asserts `tests` and `lint`
+ - **Release**: manual release using `semver`
+
+Check them out: [CI Workflow](https://github.com/westcottian/vwap-calculation-engine/actions)
+
+
 # Docs
 You can find a more detailed overview regarding assumptions and decisions over [here](docs/).
