@@ -3,6 +3,12 @@ vwap-calculation-engine is a real-time VWAP (Volume-Weighted Average Price) calc
 
 It uses [Coinbase's WS API](https://docs.cloud.coinbase.com/exchange/docs/websocket-overview) as data feed.
 
+# Design
+
+Communicates with [Coinbase Websocket Matches Channel](https://docs.cloud.coinbase.com/exchange/docs/websocket-channels#match), calculates VWAP of a number of Trading Pairs using set sliding window of trades.
+
+Please refer to the [Design Doc](https://miro.com/app/board/uXjVOyTkRcE=/)
+
 # Dependencies
 
 - `Go` >= 1.17
