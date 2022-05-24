@@ -90,6 +90,5 @@ There are 2 GitHub Actions:
 
 Check them out: [CI Workflow](https://github.com/westcottian/vwap-calculation-engine/actions)
 
-
 # Docs
 You can find a more detailed overview regarding assumptions and decisions over [here](docs/).
