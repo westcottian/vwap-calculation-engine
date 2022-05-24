@@ -31,4 +31,11 @@ run: ## Run
 	$(MAKE) create-env
 	go run cmd/main.go
 
+docker-run: ## Run inside a docker container
+	$(MAKE) docker-build
+	docker container run --env-file=.env.docker.sample vwap-calculation-engine
+
+docker-build: ## Build docker image
+	docker build -t vwap-calculation-engine .
+
 .PHONY: test
